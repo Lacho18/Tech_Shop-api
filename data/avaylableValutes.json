@@ -1,0 +1,31 @@
+[
+    {
+        "currency" : "leva",
+        "symbol" : "BG",
+        "coefficient" : 1
+    },
+
+    {
+        "currency" : "euro",
+        "symbol" : "€",
+        "coefficient" : 1.95583
+    },
+
+    {
+        "currency" : "dollar",
+        "symbol" : "$",
+        "coefficient" : 1.79465
+    },
+
+    {
+        "currency" : "pound",
+        "symbol" : "£",
+        "coefficient" : 2.28611
+    },
+
+    {
+        "currency" : "dinar",
+        "symbol" : "د. ك",
+        "coefficient" : 0.01669
+    }
+]
