@@ -7,7 +7,27 @@ const asyncHandler = require('express-async-handler');
 
 //A function that returns all the comments for a specific product
 const getComments = asyncHandler(async (req, res) => {
+    //splits the coming query by every ',' and makes the numbers
+    let usersID = req.query.usersID.split(',').map(Number);
 
+    //removes the repeating elements in the array
+    for (let i = 0; i < usersID.length - 1; i++) {
+        for (let j = i + 1; j < usersID.length; j++) {
+            if (usersID[i] && usersID[j] && usersID[i] === usersID[j]) {
+                usersID.splice(j, 1);
+                j--;
+            }
+        }
+    }
+
+    let collection = mongoose.connection.collection("users");
+    let result = await collection.find({id : {$in : usersID}}, {projection : {_id : 0, id : 1, username : 1}}).toArray();
+
+    if(result) {
+        res.status(201).json(result);
+    } else {
+        res.status(400).json({message : "No comments found!"});
+    }
 });
 
 //a function that add new comment to the database

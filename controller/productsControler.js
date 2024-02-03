@@ -69,9 +69,6 @@ const postProduct = asyncHandler(async (req, res) => {
         console.error('Error adding product:', error);
         res.status(500).json({ message: "Internal server error" });
     }
-
-    console.log("The input field");
-    console.log(input);
 });
 
 const deleteProduct = asyncHandler(async (req, res) => {
@@ -96,7 +93,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
             let productIdToChange = await Product.findOne({id : i});
         }
         */
-        console.log(result);
+        //console.log(result);
     } else {
         console.log("No such product found"); 
     }

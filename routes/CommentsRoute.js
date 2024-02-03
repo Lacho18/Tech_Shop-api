@@ -2,8 +2,9 @@ const { default: mongoose } = require('mongoose');
 const express = require('express');
 const router = express.Router();
 const commentsFunctions = require('../controller/commentsControler');
+        
 
-router.route("/")
+router.route("/*")
         .get(commentsFunctions.getComments)
         .post(commentsFunctions.postComment)
         .put(commentsFunctions.updateComment)

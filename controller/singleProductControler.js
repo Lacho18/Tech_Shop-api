@@ -13,7 +13,6 @@ const getSingleProduct = asyncHandler(async (req, res) => {
     let currency = fs.readFileSync(path.resolve(__dirname, "../data/avaylableValutes.json"), "utf-8");
     currency = JSON.parse(currency);
 
-    console.log(result);
     if (result) {
         return res.status(201).json({...result, currency: currency});
     }
