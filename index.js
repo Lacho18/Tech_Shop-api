@@ -5,6 +5,7 @@ const cors = require('cors');
 const connectDB = require('./middleware/connectDB');
 const getAllUsers = require('./controller/getAllUsers');
 const { default: mongoose } = require('mongoose');
+const Comments = require('./models/Comments');
 
 const PORT = 5000;
 
