@@ -6,7 +6,7 @@ const path = require("path");
 const asyncHandler = require('express-async-handler');
 
 const getProduct = asyncHandler(async (req, res) => {
-    const { type } = req.params;
+    const type = req.query.type;
     let collection = mongoose.connection.collection(`${type}`);
     let result = await collection.find({}).toArray();
 
@@ -19,6 +19,7 @@ const getProduct = asyncHandler(async (req, res) => {
 
 const postProduct = asyncHandler(async (req, res) => {
     const input = req.body;
+    console.log(input);
     //Checks for empty input fields
     for (key in input) {
         if (input[key] === "" || input[key] === undefined || input[key] === -1) {
@@ -72,30 +73,25 @@ const postProduct = asyncHandler(async (req, res) => {
 });
 
 const deleteProduct = asyncHandler(async (req, res) => {
-    const { id, type } = req.body;
+    //const { id, type } = req.body;
+    const data = JSON.parse(req.query.data);
+    console.log(`${data.type} and ${data.id}`);
 
-    try {
-        let result = await Product.deleteOne({ id: id });
-    }
-    catch (err) {
-        console.error(err);
-    }
+    let counter = await ProductsNumber.findOneAndUpdate({id : data.type}, {$inc : {number_of_products : -1}}, {new : true});
+
+    let collection = mongoose.connection.collection(`${data.type}`);
+    let result = await collection.deleteOne({id : data.id});
+
     if (result) {
-        /*
-        This code updates the counter. It depends on the database structure
-        let counterFilter = await ProductsNumber.findOne({id : type});
-        counterFilter.number_of_products--;
-        counterFilter.save();
-        */
-        /*
-        This code depends on the database structure
-        for(let i = id + 1; i <= counterFilter.number_of_products; i++) {
-            let productIdToChange = await Product.findOne({id : i});
+        if(data.id !== counter.number_of_products + 1) {
+            for(let i = data.id + 1; i <= counter.number_of_products + 1; i++) {
+                await collection.updateOne({id : i}, {$inc : {id : -1}});
+            }
         }
-        */
-        //console.log(result);
+        
+        return res.status(201).json({message : "Product deleted!"});
     } else {
-        console.log("No such product found"); 
+        return res.status(400).json({message : "Delete failed!"});
     }
 })
 

@@ -8,6 +8,7 @@ const asyncHandler = require('express-async-handler');
 //A function that returns all the comments for a specific product
 const getComments = asyncHandler(async (req, res) => {
     console.log(req.query.pageNumber);
+    console.log("Stava neshto");
 
     let currentProductAndPageData = JSON.parse(req.query.pageNumber);
 
@@ -15,7 +16,7 @@ const getComments = asyncHandler(async (req, res) => {
         if the page is first and first loaded takes the comments that are inside the comments atribute of the current product
         this code also gets the total number of the comments on this prduct and returns it so that it can be define how many pages should have for the comments        
     */
-    if (currentProductAndPageData.page == 1) {
+    if (currentProductAndPageData.page == 1 && !currentProductAndPageData.isAuthorized) {
         //Gets the total number of comments without the comments on the main component
         let totalNumberOFComments = await CommentsSchema.countDocuments({productType : currentProductAndPageData.productType, productID : currentProductAndPageData.productID});
         console.log(totalNumberOFComments);
@@ -44,7 +45,7 @@ const getComments = asyncHandler(async (req, res) => {
             res.status(400).json({ message: "No comments found!" });
         }
     }
-    else {
+    else if(!currentProductAndPageData.isAuthorized) {
         //Gets 10 comments from the collection with the comments. If the page is like 4 skips 20 comments because first 10 are in the main document
         let result = await CommentsSchema.find({productType : currentProductAndPageData.productType, productID : currentProductAndPageData.productID})
                                     .skip((currentProductAndPageData.page - 2) * 10)
@@ -67,6 +68,16 @@ const getComments = asyncHandler(async (req, res) => {
         })
         
         return res.status(201).json({comments : result});
+    }
+    //Takes all the comments in the collection. Its a request that can be done only from admin page
+    else {
+        let totalNumberOFComments = await CommentsSchema.countDocuments({});
+        let result = await CommentsSchema.find({}).skip((currentProductAndPageData.page - 1) * 10).limit(10);
+        if (result) {
+            res.status(201).json({comments : result, allComments : totalNumberOFComments});
+        } else {
+            res.status(400).json({ message: "No comments found!" });
+        }
     }
 
 });
@@ -113,7 +124,29 @@ const updateComment = asyncHandler(async (req, res) => {
 
 //function that deletes a comment
 const deleteComment = asyncHandler(async (req, res) => {
+    let id = req.query.id;
+    let counter = await ProductNumbers.findOneAndUpdate({id : "comments"}, {$inc : {number_of_products : -1}}, {$new : true});
+    let result = await CommentsSchema.deleteOne({commentID : id});
+    console.log(result);
+    if(result.deletedCount > 0) {
+        console.log(counter.number_of_products + 1);
+        console.log(id);
+        if(counter.number_of_products + 1 !== id) { 
+            console.log("V if proverkata");
+            //!!!!!!!!!!!!!!!!!!!!
+            //problem with execution of the for cicle
+            for (let i = id + 1; i <= counter.number_of_products + 1; i++) {
+                console.log("V for cikula sum");
+                let updated = await CommentsSchema.updateOne({ commentID: i }, { $inc: { commentID: -1 } });
+                console.log(updated.upsertedCount);
+            } 
+        }
 
+        return res.status(201).json({message : "Comment deleted"});
+    }
+    else {
+        return res.status(401).json({message : "Error"});
+    }
 });
 
 

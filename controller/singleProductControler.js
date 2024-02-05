@@ -6,6 +6,8 @@ const path = require("path");
 const getSingleProduct = asyncHandler(async (req, res) => {
     const { id, type } = req.params;
 
+    console.log("ALOOOOOOOOOOOO");
+
     //finds the product
     let collection = mongoose.connection.collection(`${type}`);
     let result = await collection.findOne({id : Number(id)});
