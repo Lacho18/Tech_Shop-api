@@ -35,6 +35,8 @@ app.use('/characteristics', require("./routes/Characteristics"));
 
 app.use('/comments', require("./routes/CommentsRoute"));
 
+app.use('/allUsers', require("./routes/AllUsers"));
+
 app.all('*', (req, res) => {
   res.status(404).json({message : "Not a valid URL!"});
 })

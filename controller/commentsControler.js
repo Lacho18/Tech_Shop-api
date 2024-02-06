@@ -18,11 +18,11 @@ const getComments = asyncHandler(async (req, res) => {
     */
     if (currentProductAndPageData.page == 1 && !currentProductAndPageData.isAuthorized) {
         //Gets the total number of comments without the comments on the main component
-        let totalNumberOFComments = await CommentsSchema.countDocuments({productType : currentProductAndPageData.productType, productID : currentProductAndPageData.productID});
+        let totalNumberOFComments = await CommentsSchema.countDocuments({ productType: currentProductAndPageData.productType, productID: currentProductAndPageData.productID });
         console.log(totalNumberOFComments);
         //gets current product
         let collection = mongoose.connection.collection(`${currentProductAndPageData.productType}`);
-        let product = await collection.findOne({id : currentProductAndPageData.productID});
+        let product = await collection.findOne({ id: currentProductAndPageData.productID });
         let result = product.comments;
         usersID = result.map(indexValue => indexValue.userID);
 
@@ -40,16 +40,16 @@ const getComments = asyncHandler(async (req, res) => {
         })
 
         if (result) {
-            res.status(201).json({comments : result, allComments : totalNumberOFComments + result.length});
+            res.status(201).json({ comments: result, allComments: totalNumberOFComments + result.length });
         } else {
             res.status(400).json({ message: "No comments found!" });
         }
     }
-    else if(!currentProductAndPageData.isAuthorized) {
+    else if (!currentProductAndPageData.isAuthorized) {
         //Gets 10 comments from the collection with the comments. If the page is like 4 skips 20 comments because first 10 are in the main document
-        let result = await CommentsSchema.find({productType : currentProductAndPageData.productType, productID : currentProductAndPageData.productID})
-                                    .skip((currentProductAndPageData.page - 2) * 10)
-                                    .limit(10);          
+        let result = await CommentsSchema.find({ productType: currentProductAndPageData.productType, productID: currentProductAndPageData.productID })
+            .skip((currentProductAndPageData.page - 2) * 10)
+            .limit(10);
 
         //gets every userID and store it in an array
         let usersID = result.map(indexValue => indexValue.userID);
@@ -66,15 +66,15 @@ const getComments = asyncHandler(async (req, res) => {
             const matches = usersData.find(userData => userData.id === indexValue.userID);
             return matches ? { ...indexValue._doc, username: matches.username } : indexValue._doc;
         })
-        
-        return res.status(201).json({comments : result});
+
+        return res.status(201).json({ comments: result });
     }
     //Takes all the comments in the collection. Its a request that can be done only from admin page
     else {
         let totalNumberOFComments = await CommentsSchema.countDocuments({});
         let result = await CommentsSchema.find({}).skip((currentProductAndPageData.page - 1) * 10).limit(10);
         if (result) {
-            res.status(201).json({comments : result, allComments : totalNumberOFComments});
+            res.status(201).json({ comments: result, allComments: totalNumberOFComments });
         } else {
             res.status(400).json({ message: "No comments found!" });
         }
@@ -89,7 +89,7 @@ const postComment = asyncHandler(async (req, res) => {
     const counter = await ProductNumbers.findOneAndUpdate({ id: "comments" }, { $inc: { number_of_products: 1 } }, { new: true });
     const newComment = {
         userID: userID,
-        productType : productType,
+        productType: productType,
         productID: productID,
         commentID: counter.number_of_products,
         timestamp: new Date(),
@@ -124,38 +124,34 @@ const updateComment = asyncHandler(async (req, res) => {
 
 //function that deletes a comment
 const deleteComment = asyncHandler(async (req, res) => {
-    let id = req.query.id;
-    let counter = await ProductNumbers.findOneAndUpdate({id : "comments"}, {$inc : {number_of_products : -1}}, {$new : true});
-    let result = await CommentsSchema.deleteOne({commentID : id});
-    console.log(result);
-    if(result.deletedCount > 0) {
-        console.log(counter.number_of_products + 1);
-        console.log(id);
-        if(counter.number_of_products + 1 !== id) { 
-            console.log("V if proverkata");
-            //!!!!!!!!!!!!!!!!!!!!
-            //problem with execution of the for cicle
-            for (let i = id + 1; i <= counter.number_of_products + 1; i++) {
-                console.log("V for cikula sum");
-                let updated = await CommentsSchema.updateOne({ commentID: i }, { $inc: { commentID: -1 } });
-                console.log(updated.upsertedCount);
-            } 
+    let id = Number(req.query.id);
+    let counter = await ProductNumbers.findOneAndUpdate({ id: "comments" }, { $inc: { number_of_products: -1 } }, { new: true }); // Use { new: true } to return the updated document
+    let result = await CommentsSchema.deleteOne({ commentID: id });
+
+    if (result.deletedCount > 0) {
+        if (counter.number_of_products + 1 !== id) {
+            // Run the loop only after counter is updated
+            for (let i = id + 1; i <= Number(counter.number_of_products + 1); i++) {
+                try {
+                    let updated = await CommentsSchema.updateOne({ commentID: i }, { $inc: { commentID: -1 } });
+                    console.log(updated.upsertedCount);
+                } catch (error) {
+                    console.error("Error updating comment:", error);
+                }
+            }
         }
 
-        return res.status(201).json({message : "Comment deleted"});
-    }
-    else {
-        return res.status(401).json({message : "Error"});
+        return res.status(201).json({ message: "Comment deleted" });
+    } else {
+        return res.status(401).json({ message: "Error" });
     }
 });
-
-
 
 //removes the repeating elements in the array
 function simplifyArray(array) {
     for (let i = 0; i < array.length - 1; i++) {
         for (let j = i + 1; j < array.length; j++) {
-            if (array[i] && array[j] && array[i] === array[j]) {  
+            if (array[i] && array[j] && array[i] === array[j]) {
                 array.splice(j, 1);
                 j--;
             }
