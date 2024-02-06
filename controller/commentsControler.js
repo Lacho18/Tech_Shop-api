@@ -4,6 +4,7 @@ const path = require("path");
 const CommentsSchema = require("../models/Comments");
 const ProductNumbers = require("../models/ProductsNumbers");
 const asyncHandler = require('express-async-handler');
+const User = require('../models/User');
 
 //A function that returns all the comments for a specific product
 const getComments = asyncHandler(async (req, res) => {
@@ -99,7 +100,8 @@ const postComment = asyncHandler(async (req, res) => {
     const collection = mongoose.connection.collection(`${productType}`);
     const product = await collection.findOne({ id: productID });
 
-    let result = 1;
+    //Adds the comment to the product product array or inside the comments collection (depends on the number of already existing comments)
+    let result;
     if (product) {
         if (product.comments.length <= 10) {
             result = await collection.updateOne({ id: productID }, { $push: { comments: newComment } }, { new: true });
@@ -108,6 +110,15 @@ const postComment = asyncHandler(async (req, res) => {
             result = await CommentsSchema.create(newComment);
         }
     }
+
+    //Adds the comment to the user object, inside the comments array
+    let commentObject = {
+        type : product.type,
+        brand : product.brand,
+        model : product.model,
+        comment : comment
+    }
+    await User.updateOne({id : userID}, {$push : {comments : commentObject}});
 
     if (result) {
         return res.status(201).json({ message: "Comment submited!" });

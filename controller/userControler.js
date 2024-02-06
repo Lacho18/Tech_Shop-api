@@ -5,7 +5,8 @@ const asyncHandler = require('express-async-handler');
 //let usersCounter = 1;
 
 const createNewUser = asyncHandler(async (req, res) => {
-    const {username, password, confPassword, gender} = req.body;
+    const {username, password, confPassword, birthday, gender} = req.body;
+    let todaysDate = new Date();
     let role = '';
 
     //Counter for the users. The number_of_users field will be the id of the new user
@@ -53,8 +54,15 @@ const createNewUser = asyncHandler(async (req, res) => {
         role = "user";
     }
 
+    let newUser = {
+        id : counter.number_of_products,
+        username : newUsername,
+        password : password,
+        gender : gender
+    }
+
     //Creates the user in the database
-    const user = await User.create({id: counter.number_of_products, username : newUsername, password, gender, role});
+    const user = await User.create({id: counter.number_of_products, username : newUsername, password, gender, birthday, acountCreation : todaysDate, role});
 
     if(user) {
         res.status(201).json({message : "User created!"})
