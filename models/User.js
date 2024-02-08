@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     acountCreation : Date,
     role: String,
     comments : [Object],
-    purchases : [String],
+    purchases : [Object],
     box : [String] 
 })
 
