@@ -4,7 +4,7 @@ const path = require("path");
 const CommentsSchema = require("../models/Comments");
 const ProductNumbers = require("../models/ProductsNumbers");
 const asyncHandler = require('express-async-handler');
-const User = require('../models/User');
+const User = require('../models/User'); 
 
 //A function that returns all the comments for a specific product
 const getComments = asyncHandler(async (req, res) => {
