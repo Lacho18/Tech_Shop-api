@@ -94,7 +94,7 @@ const LoginUser = asyncHandler(async(req, res) => {
         }
     }
 
-    let userToSend = userToFind;
+    let userToSend = userToFind;      
     delete userToSend["password"];
     return res.status(201).json({...userToSend, message : "Success"});
 });
