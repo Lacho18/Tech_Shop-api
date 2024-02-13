@@ -127,10 +127,17 @@ const postComment = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Bad request" });
     }
 });
-
+  
 //function that updates a comment
 const updateComment = asyncHandler(async (req, res) => {
+    /*
+        Write code to update comment in the database!!!!!!!!!!!!!!!
+    */
+    let data = JSON.parse(req.query.data);
+    let commentID = Number(data.commentID);
+    let redactedComment = data.correctedComment;
 
+    console.log(`${commentID} <=> ${redactedComment}`);
 });
 
 //function that deletes a comment
