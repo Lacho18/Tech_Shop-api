@@ -4,7 +4,7 @@ const path = require("path");
 const CommentsSchema = require("../models/Comments");
 const ProductNumbers = require("../models/ProductsNumbers");
 const asyncHandler = require('express-async-handler');
-const User = require('../models/User'); 
+const User = require('../models/User');
 
 //A function that returns all the comments for a specific product
 const getComments = asyncHandler(async (req, res) => {
@@ -113,12 +113,12 @@ const postComment = asyncHandler(async (req, res) => {
 
     //Adds the comment to the user object, inside the comments array
     let commentObject = {
-        type : product.type,
-        brand : product.brand,
-        model : product.model,
-        comment : comment
+        type: product.type,
+        brand: product.brand,
+        model: product.model,
+        comment: comment
     }
-    await User.updateOne({id : userID}, {$push : {comments : commentObject}});
+    await User.updateOne({ id: userID }, { $push: { comments: commentObject } });
 
     if (result) {
         return res.status(201).json({ message: "Comment submited!" });
@@ -127,22 +127,52 @@ const postComment = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Bad request" });
     }
 });
-  
+
 //function that updates a comment
 const updateComment = asyncHandler(async (req, res) => {
-    /*
-        Write code to update comment in the database!!!!!!!!!!!!!!!
-    */
     let data = JSON.parse(req.query.data);
     let commentID = Number(data.commentID);
     let redactedComment = data.correctedComment;
 
-    console.log(`${commentID} <=> ${redactedComment}`);
+    let collection = mongoose.connection.collection(`${data.productType}`);
+    let product = await collection.findOne({ id: data.productID });
+
+    if (product) {
+        let result = product.comments.find(indexValue => indexValue.commentID === commentID);
+
+        //in case the comment is inside the main array in the product object
+        if (result) {
+            //finds the index of the object inside the comments array that should be updated
+            let index = product.comments.map(x => x.commentID).indexOf(commentID);
+
+            //updates the comment field in the specific index inside the array
+            let document = await collection.updateOne({ id: data.productID }, { $set: { [`comments.${index}.comment`]: redactedComment } });
+            if (document.modifiedCount > 0) {
+                return res.status(201).json({ message: "Comment updated!" });
+            }
+            else {
+                return res.status(404).json({ message: "Comment not found" });
+            }
+        }
+        //in case the comment is inside the comments collection
+        else {
+            //upgrates the comment inside the comment field
+            let updatedResult = await CommentsSchema.updateOne({ commentID: commentID }, { comment: redactedComment });
+            if (updatedResult.modifiedCount > 0) {
+                return res.status(201).json({ message: "Comment updated!" });
+            }
+            else {
+                return res.status(404).json({ message: "Comment not found" });
+            }
+
+        }
+    }
 });
 
 //function that deletes a comment
 const deleteComment = asyncHandler(async (req, res) => {
-    let id = Number(req.query.id);
+    let data = JSON.parse(req.query.data);
+    let id = Number(data.commentID);
     let counter = await ProductNumbers.findOneAndUpdate({ id: "comments" }, { $inc: { number_of_products: -1 } }, { new: true }); // Use { new: true } to return the updated document
     let result = await CommentsSchema.deleteOne({ commentID: id });
 
@@ -161,7 +191,16 @@ const deleteComment = asyncHandler(async (req, res) => {
 
         return res.status(201).json({ message: "Comment deleted" });
     } else {
-        return res.status(401).json({ message: "Error" });
+        let collection = mongoose.connection.collection(`${data.productType}`);
+        let product = await collection.findOne({id : data.productID});
+        let updateCount = await collection.updateOne({id : data.productID}, {$pull : {comments : {commentID : data.commentID}}});
+
+        if(updateCount.modifiedCount > 0) {
+            return res.status(201).json({ message: "Comment deleted" });
+        }
+        else {
+            return res.status(401).json({ message: "Error" });
+        }
     }
 });
 
