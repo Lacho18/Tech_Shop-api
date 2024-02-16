@@ -4,5 +4,7 @@
     "RefreshRate": 0,
     "ChipSet": "",
     "RAM": 0,
-    "Disk_Memory": 0
+    "Disk_Memory": 0,
+    "Internet_Type": "",
+    "Number_Of_SIM_Cards": 0
 }

@@ -12,7 +12,8 @@ const productSchema = new mongoose.Schema({
     comments : [Object],
     price : Number,
     available : Number,
-    buyed : Number
+    buyed : Number,
+    isNew : Boolean
 });
 
 module.exports = mongoose.model('Product', productSchema);

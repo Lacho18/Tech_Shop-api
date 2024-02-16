@@ -4,11 +4,16 @@ const ProductsNumber = require('../models/ProductsNumbers.js');
 const fs = require("fs");
 const path = require("path");
 const asyncHandler = require('express-async-handler');
+const MainClass = require("../middleware/productRequest.js");
 
 const getProduct = asyncHandler(async (req, res) => {
-    const type = req.query.type;
-    let collection = mongoose.connection.collection(`${type}`);
-    let result = await collection.find({}).toArray();
+    const data = JSON.parse(req.query.data);
+    console.log(data.productType);
+    let collection = mongoose.connection.collection(`${data.productType}`);
+    //let result = await collection.find({}).toArray();
+    let instance = new MainClass(data.productType, collection, data.requestType);
+    let result = await instance.getResult();
+    //console.log(result);
 
     if (result) {
         res.status(200).json(result);
@@ -19,7 +24,7 @@ const getProduct = asyncHandler(async (req, res) => {
 
 const postProduct = asyncHandler(async (req, res) => {
     const input = req.body;
-    console.log(input);
+    console.log(input);  
     //Checks for empty input fields
     for (key in input) {
         if (input[key] === "" || input[key] === undefined || input[key] === -1) {
@@ -52,6 +57,13 @@ const postProduct = asyncHandler(async (req, res) => {
     typeWithLowerCase = firstLetter + typeWithLowerCase;
     input.type = typeWithLowerCase;
 
+    if(input.isNew === "Yes" || input.isNew === "yes") {
+        input.isNew = true;
+    }
+    else {
+        input.isNew = false;
+    }
+
     try {
         let collection = mongoose.connection.collection(`${input.type}`);
         let repeate = await collection.findOne({...input});
@@ -60,7 +72,7 @@ const postProduct = asyncHandler(async (req, res) => {
             return res.status(401).json({message : "This product already exist!"})
         }
 
-        //Increments the valuo for the documents that counts the product with specific type
+        //Increments the valio for the documents that counts the product with specific type
         let counter = await ProductsNumber.findOneAndUpdate({id : input.type}, {$inc : {number_of_products : 1}}, {new : true});
 
         await collection.insertOne({id : counter.number_of_products, ...input});

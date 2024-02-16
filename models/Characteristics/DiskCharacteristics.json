@@ -1,6 +1,6 @@
 {
     "purpose": "",
-    "type": "",
-    "capacity": "",
+    "disk_type": "",
+    "capacity": 0,
     "interfaces": []
 }
