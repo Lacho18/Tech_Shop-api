@@ -15,19 +15,9 @@ app.use(bodyParser.json());
 
 connectDB();
 
-app.get('/', async (req, res) => {
-    try {
-        const users = await getAllUsers();
-        res.json(users);
-    } catch (error) {
-        console.error("Error retrieving users:", error);
-        res.status(500).send("Internal Server Error");
-    } 
-});
 
-app.use('/login', require('./routes/Login'));
-
-app.use('/create', require("./routes/AccountCreation"));
+//Routes that handle the http requests or CRUD operations to the database
+app.use('/user', require('./routes/UsersRoute'));
 
 app.use('/product', require("./routes/ProductsRoute"));
 

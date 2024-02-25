@@ -8,9 +8,6 @@ const User = require('../models/User');
 
 //A function that returns all the comments for a specific product
 const getComments = asyncHandler(async (req, res) => {
-    console.log(req.query.pageNumber);
-    console.log("Stava neshto");
-
     let currentProductAndPageData = JSON.parse(req.query.pageNumber);
 
     /*

@@ -1,8 +1,12 @@
 const User = require('../models/User');
 const BanUser = require('../models/BannedUser.js');
 const ProductsNumber = require('../models/ProductsNumbers.js');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const asyncHandler = require('express-async-handler');
+require('dotenv').config();
 
+//Creates a new user in the database
 const createNewUser = asyncHandler(async (req, res) => {
     const { username, password, confPassword, birthday, gender } = req.body;
     let todaysDate = new Date();
@@ -53,15 +57,12 @@ const createNewUser = asyncHandler(async (req, res) => {
         role = "user";
     }
 
-    let newUser = {
-        id: counter.number_of_products,
-        username: newUsername,
-        password: password,
-        gender: gender
-    }
+    //code the password of the user
+    let hashedPassword = await bcrypt.hash(password, 8);
+    console.log(hashedPassword);
 
     //Creates the user in the database
-    const user = await User.create({ id: counter.number_of_products, username: newUsername, password, gender, birthday, acountCreation: todaysDate, role });
+    const user = await User.create({ id: counter.number_of_products, username: newUsername, password: hashedPassword, gender, birthday, acountCreation: todaysDate, role });
 
     if (user) {
         res.status(201).json({ message: "User created!" })
@@ -71,16 +72,21 @@ const createNewUser = asyncHandler(async (req, res) => {
     }
 });
 
+//Finds the user and sends the data about him
 const LoginUser = asyncHandler(async (req, res) => {
-    const { username, password } = req.body;
+    let data = JSON.parse(req.query.data);
+    let username = data.username;
+    let password = data.password;
+
+    const secretKey = process.env.SECRET_KEY;
+    console.log(secretKey);
 
     if (!username || !password) {
         return res.status(400).json({ message: "All fields are required!" });
     }
 
     let userToFind = await User.findOne({
-        username: username,
-        password: password
+        username: username
     }).lean().exec();
 
     if (!userToFind) {
@@ -90,15 +96,28 @@ const LoginUser = asyncHandler(async (req, res) => {
             return res.status(201).json({ message: "You have been banned!", data: bannedUser });
         }
         else {
-            return res.status(400).json({ message: "Not such user found!" });
+            return res.status(401).json({ message: "Not such user found!" });
         }
     }
 
+    //Checks if the user is created before adding the hash of the password or if the password is valid
+    if (password !== userToFind.password) {
+        console.log("PUPESH");
+        const validPassword = await bcrypt.compare(password, userToFind.password);
+        console.log(validPassword);
+
+        if (!validPassword) {
+            res.status(401).json({ message: "Invalid password!" });
+        }
+    }
+
+    const token = jwt.sign({UserID : userToFind.id}, secretKey, {expiresIn : "1h"});
     let userToSend = userToFind;
     delete userToSend["password"];
-    return res.status(201).json({ ...userToSend, message: "Success" });
+    return res.status(201).json({ ...userToSend, message: "Success", token : token });
 });
 
+//Deletes the user from the ban collection. This happens after the banned user tries to log in
 const deleteFromBanCollection = asyncHandler(async (req, res) => {
     const { id } = req.query;
 
@@ -112,6 +131,7 @@ const deleteFromBanCollection = asyncHandler(async (req, res) => {
     }
 })
 
+//Deletes the user from the database
 const deleteUser = asyncHandler(async (req, res) => {
     const banData = JSON.parse(req.query.banData);
 
@@ -130,28 +150,28 @@ const deleteUser = asyncHandler(async (req, res) => {
                 dateOfBanning: new Date()
             }
         }
-            //Decrement the counter of users
-            counter = await ProductsNumber.findOneAndUpdate({ id: "Users" }, { $inc: { number_of_products: -1 } });
+        //Decrement the counter of users
+        counter = await ProductsNumber.findOneAndUpdate({ id: "Users" }, { $inc: { number_of_products: -1 } });
 
-            //Decrements the ids of every user with bigger id than deleted one
-            if (user.id !== counter.number_of_products + 1) {
-                for (let i = user.id + 1; i <= counter.number_of_products + 1; i++) {
-                    await User.updateOne({ id: i }, { $inc: { id: -1 } });
-                }
-            }
-
-            //creates the banned document
-            if(bannedUserObject) {
-                var insertBan = BanUser.create(bannedUserObject);
-            }
-
-            if (insertBan) {
-                return res.status(201).json({ message: "User banned!" });
-            }
-            else {
-                return res.status(401).json({ message: "Bad request" });
+        //Decrements the ids of every user with bigger id than deleted one
+        if (user.id !== counter.number_of_products + 1) {
+            for (let i = user.id + 1; i <= counter.number_of_products + 1; i++) {
+                await User.updateOne({ id: i }, { $inc: { id: -1 } });
             }
         }
+
+        //creates the banned document
+        if (bannedUserObject) {
+            var insertBan = BanUser.create(bannedUserObject);
+        }
+
+        if (insertBan) {
+            return res.status(201).json({ message: "User banned!" });
+        }
+        else {
+            return res.status(401).json({ message: "Bad request" });
+        }
+    }
     else {
         return res.status(404).json({ message: "No such user found" });
     }
