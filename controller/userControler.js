@@ -65,10 +65,10 @@ const createNewUser = asyncHandler(async (req, res) => {
     const user = await User.create({ id: counter.number_of_products, username: newUsername, password: hashedPassword, gender, birthday, acountCreation: todaysDate, role });
 
     if (user) {
-        res.status(201).json({ message: "User created!" })
+        res.status(201).json({ message: "User created!" });
     }
     else {
-        res.status(400).json({ message: "Invalid data recieved!" })
+        res.status(400).json({ message: "Invalid data recieved!" });      
     }
 });
 
