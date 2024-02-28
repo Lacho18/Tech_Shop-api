@@ -22,7 +22,6 @@ class MainClass {
             case "camera" : this.instance = new Camera(requestProduct, collection, reqType);
             break;
             default : this.instance = new Request(requestProduct, collection, reqType);
-            console.log("error");
             break;
         }
     }
@@ -62,11 +61,9 @@ class Request {
 class Laptop extends Request {
     constructor(requestProduct, collection, reqType) {
         super(requestProduct, collection, reqType);
-        console.log("Laptop constryctor");
     }
 
     async request() {
-        console.log("Laptop request method");
         let result;
         switch(this.reqType) {
             case "Second hand" : result = await getSecondHanded(this.collection);

@@ -17,18 +17,3 @@ const productSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Product', productSchema);
-
-/*
-    {
-        processor : String,
-        GPU : String,
-        DRAM : {
-            model : String,
-            capacity : Number
-        },
-        Disk : {
-            kind : String,
-            capacity : Number
-        },
-    }
-*/ 

@@ -8,12 +8,9 @@ const MainClass = require("../middleware/productRequest.js");
 
 const getProduct = asyncHandler(async (req, res) => {
     const data = JSON.parse(req.query.data);
-    console.log(data.productType);
     let collection = mongoose.connection.collection(`${data.productType}`);
-    //let result = await collection.find({}).toArray();
     let instance = new MainClass(data.productType, collection, data.requestType);
     let result = await instance.getResult();
-    //console.log(result);
 
     if (result) {
         res.status(200).json(result);
@@ -23,8 +20,7 @@ const getProduct = asyncHandler(async (req, res) => {
 });
 
 const postProduct = asyncHandler(async (req, res) => {
-    const input = req.body;
-    console.log(input);  
+    const input = req.body; 
     //Checks for empty input fields
     for (key in input) {
         if (input[key] === "" || input[key] === undefined || input[key] === -1) {
@@ -67,7 +63,6 @@ const postProduct = asyncHandler(async (req, res) => {
     try {
         let collection = mongoose.connection.collection(`${input.type}`);
         let repeate = await collection.findOne({...input});
-        console.log(repeate);
         if(repeate) {
             return res.status(401).json({message : "This product already exist!"})
         }
@@ -85,9 +80,7 @@ const postProduct = asyncHandler(async (req, res) => {
 });
 
 const deleteProduct = asyncHandler(async (req, res) => {
-    //const { id, type } = req.body;
     const data = JSON.parse(req.query.data);
-    console.log(`${data.type} and ${data.id}`);
 
     let counter = await ProductsNumber.findOneAndUpdate({id : data.type}, {$inc : {number_of_products : -1}}, {new : true});
 

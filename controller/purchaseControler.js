@@ -2,10 +2,6 @@ const { default: mongoose } = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const User = require("../models/User");
 
-const getPurchasedItems = asyncHandler((req, res) => {
-
-});
-
 const postPurchasedItems = asyncHandler(async (req, res) => {
     const items = req.body.items;
 
@@ -17,4 +13,4 @@ const postPurchasedItems = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = {getPurchasedItems, postPurchasedItems};
+module.exports = {postPurchasedItems};

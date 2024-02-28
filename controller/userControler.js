@@ -59,7 +59,6 @@ const createNewUser = asyncHandler(async (req, res) => {
 
     //code the password of the user
     let hashedPassword = await bcrypt.hash(password, 8);
-    console.log(hashedPassword);
 
     //Creates the user in the database
     const user = await User.create({ id: counter.number_of_products, username: newUsername, password: hashedPassword, gender, birthday, acountCreation: todaysDate, role });
@@ -79,7 +78,6 @@ const LoginUser = asyncHandler(async (req, res) => {
     let password = data.password;
 
     const secretKey = process.env.SECRET_KEY;
-    console.log(secretKey);
 
     if (!username || !password) {
         return res.status(400).json({ message: "All fields are required!" });
@@ -102,9 +100,7 @@ const LoginUser = asyncHandler(async (req, res) => {
 
     //Checks if the user is created before adding the hash of the password or if the password is valid
     if (password !== userToFind.password) {
-        console.log("PUPESH");
         const validPassword = await bcrypt.compare(password, userToFind.password);
-        console.log(validPassword);
 
         if (!validPassword) {
             res.status(401).json({ message: "Invalid password!" });

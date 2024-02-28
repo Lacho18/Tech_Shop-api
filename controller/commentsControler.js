@@ -17,7 +17,6 @@ const getComments = asyncHandler(async (req, res) => {
     if (currentProductAndPageData.page == 1 && !currentProductAndPageData.isAuthorized) {
         //Gets the total number of comments without the comments on the main component
         let totalNumberOFComments = await CommentsSchema.countDocuments({ productType: currentProductAndPageData.productType, productID: currentProductAndPageData.productID });
-        console.log(totalNumberOFComments);
         //gets current product
         let collection = mongoose.connection.collection(`${currentProductAndPageData.productType}`);
         let product = await collection.findOne({ id: currentProductAndPageData.productID });
