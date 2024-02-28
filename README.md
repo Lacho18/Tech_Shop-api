@@ -23,25 +23,15 @@ npm start
 If everything is fine on the console should be written "Server running on port : 5000" and if the connection with the database is complete "Connection complite !". If these two messages show and there is not errors the api is started and can handle the request= All request comes from the frontend side application.
 
 ## Routes list
-| Method | URL | Action |
----------------------------------------------------------------------------
-|GET| http://localhost:5000/user | Finds an user and returns its object as result |
----------------------------------------------------------------------------
-|POST| http://localhost:5000/user | Creates a new user in the database |
----------------------------------------------------------------------------
-|DELETE| http://localhost:5000/user | Deletes an user from the database |
----------------------------------------------------------------------------
-|GET| http://localhost:5000/product | Sends data for a type of product and returns every product with the given type |
----------------------------------------------------------------------------
-|POST| http://localhost:5000/product | Creates a new product in the database |
----------------------------------------------------------------------------
-|DELETE| http://localhost:5000/product | Deletes a product from the database |
----------------------------------------------------------------------------
-|GET| http://localhost:5000/comments | Gets 10 comments depending on the product id and the number of the current page |
----------------------------------------------------------------------------
-|POST| http://localhost:5000/comments | Creates a new comment in the database |
----------------------------------------------------------------------------
-|PUT| http://localhost:5000/comments | Allows a user to change it's own comment |
----------------------------------------------------------------------------
-|DELETE| http://localhost:5000/comments | Deletes a comment from the database |
----------------------------------------------------------------------------
+| Method | URL                            | Action                                                                          |
+|--------|--------------------------------|---------------------------------------------------------------------------------|
+| GET    | http://localhost:5000/user     | Finds an user and returns its object as result                                  |
+| POST   | http://localhost:5000/user     | Creates a new user in the database                                              | 
+| DELETE | http://localhost:5000/user     | Deletes an user from the database                                               |
+| GET    | http://localhost:5000/product  | Sends data for a type of product and returns every product with the given type  |
+| POST   | http://localhost:5000/product  | Creates a new product in the database                                           |
+| DELETE | http://localhost:5000/product  | Deletes a product from the database                                             |
+| GET    | http://localhost:5000/comments | Gets 10 comments depending on the product id and the number of the current page |
+| POST   | http://localhost:5000/comments | Creates a new comment in the database                                           |
+| PUT    | http://localhost:5000/comments | Allows a user to change it's own comment                                        |
+| DELETE | http://localhost:5000/comments | Deletes a comment from the database                                             |
